@@ -9,7 +9,7 @@ const PORT = 5000;
 app.use(express.static(path.join(__dirname,'public')));
 
 app.get('/users' , (req, res) => {
-    fs.readFile('users.json','utf-8', (err, data) => {
+    fs.readFile('users.json', (err, data) => {
         if(err){
             return res.status(400).json({error: "Failed to load the user data"});
         }

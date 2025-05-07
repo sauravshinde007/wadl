@@ -1,7 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const cors = require('cors');
 const Book = require('./models/Book');
 
 const app = express();
@@ -9,7 +8,6 @@ const PORT = 5000;
 
 //Middleware
 app.use(bodyParser.json());
-app.use(cors());
 
 //Mongodb Connection
 mongoose.connect('mongodb://localhost:27017/bookstore')

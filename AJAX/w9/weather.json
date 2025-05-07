@@ -4,5 +4,5 @@
     "Delhi": { "temperature": "35°C", "humidity": "40%", "condition": "Hot" },
     "Chennai": { "temperature": "33°C", "humidity": "65%", "condition": "Cloudy" },
     "Bengaluru": { "temperature": "28°C", "humidity": "55%", "condition": "Rainy" }
-  }
+}
   

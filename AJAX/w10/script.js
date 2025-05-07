@@ -1,104 +1,57 @@
-// Override open() and send() to simulate server calls
-const originalOpen = XMLHttpRequest.prototype.open;
-const originalSend = XMLHttpRequest.prototype.send;
-
-XMLHttpRequest.prototype.open = function(method, url) {
-  this._method = method;
-  this._url = url;
-  originalOpen.call(this, method, url);
-};
-
-XMLHttpRequest.prototype.send = function(data) {
-  if (this._url === "/tasks") {
-    let tasks = JSON.parse(localStorage.getItem("tasks") || "[]");
-
-    if (this._method === "GET") {
-      this.responseText = JSON.stringify(tasks);
-      this.onload();
-    }
-
-    if (this._method === "POST") {
-      const newTask = JSON.parse(data);
-      tasks.push(newTask);
-      localStorage.setItem("tasks", JSON.stringify(tasks));
-      this.onload();
-    }
-
-    if (this._method === "PUT") {
-      const { index, text } = JSON.parse(data);
-      tasks[index].text = text;
-      localStorage.setItem("tasks", JSON.stringify(tasks));
-      this.onload();
-    }
-
-    if (this._method === "DELETE") {
-      const index = JSON.parse(data).index;
-      tasks.splice(index, 1);
-      localStorage.setItem("tasks", JSON.stringify(tasks));
-      this.onload();
-    }
-  } else {
-    originalSend.call(this, data);
-  }
-};
-
-// Load and display tasks
-function loadTasks() {
+function fetchTasks() {
   const xhr = new XMLHttpRequest();
-  xhr.open("GET", "/tasks");
-  xhr.onload = function() {
-    const tasks = JSON.parse(xhr.responseText);
-    const list = document.getElementById("taskList");
-    list.innerHTML = "";
+  xhr.open("GET", "http://localhost:3000/tasks", true);
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      const tasks = JSON.parse(xhr.responseText);
+      const taskList = document.getElementById("taskList");
+      taskList.innerHTML = ""; // Clear existing tasks
 
-    tasks.forEach((task, i) => {
-      const li = document.createElement("li");
+      tasks.forEach((task) => {
+        const li = document.createElement("li");
+        li.textContent = task.text;
+        li.setAttribute("data-id", task.id);
 
-      const input = document.createElement("input");
-      input.type = "text";
-      input.value = task.text;
-      input.onchange = () => updateTask(i, input.value);
+        // Create delete button
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "Delete";
+        delBtn.className = "delete-btn";
+        delBtn.onclick = () => deleteTask(task.id); // Assign task delete function
 
-      const delBtn = document.createElement("button");
-      delBtn.textContent = "Delete";
-      delBtn.onclick = () => deleteTask(i);
-
-      li.appendChild(input);
-      li.appendChild(delBtn);
-      list.appendChild(li);
-    });
+        li.appendChild(delBtn); // Append the delete button to the list item
+        taskList.appendChild(li); // Append list item to the task list
+      });
+    }
   };
   xhr.send();
 }
 
-// Add a task
 function addTask() {
-  const taskText = document.getElementById("taskInput").value.trim();
+  const input = document.getElementById("taskInput");
+  const taskText = input.value.trim();
   if (!taskText) return;
 
   const xhr = new XMLHttpRequest();
-  xhr.open("POST", "/tasks");
-  xhr.onload = loadTasks;
+  xhr.open("POST", "http://localhost:3000/tasks", true);
+  xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+  xhr.onload = function () {
+    if (xhr.status === 201) {
+      input.value = ""; // Clear input field
+      fetchTasks(); // Fetch and update the task list
+    }
+  };
   xhr.send(JSON.stringify({ text: taskText }));
-
-  document.getElementById("taskInput").value = "";
 }
 
-// Update a task
-function updateTask(index, text) {
+function deleteTask(id) {
   const xhr = new XMLHttpRequest();
-  xhr.open("PUT", "/tasks");
-  xhr.onload = loadTasks;
-  xhr.send(JSON.stringify({ index, text }));
+  xhr.open("DELETE", `http://localhost:3000/tasks/${id}`, true);
+  xhr.onload = function () {
+    if (xhr.status === 204) {
+      fetchTasks(); // Fetch and update the task list after deletion
+    }
+  };
+  xhr.send();
 }
 
-// Delete a task
-function deleteTask(index) {
-  const xhr = new XMLHttpRequest();
-  xhr.open("DELETE", "/tasks");
-  xhr.onload = loadTasks;
-  xhr.send(JSON.stringify({ index }));
-}
-
-// Initial load
-loadTasks();
+window.onload = fetchTasks;

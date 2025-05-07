@@ -43,7 +43,7 @@ const products = [
     }
   ];
 
-  const rowsPerpage = 3;
+  const rowsPerpage = 4;
   let currentPage = 1;
 
   const tableBody = document.getElementById("tableBody");
@@ -70,7 +70,7 @@ const products = [
         imageCell.appendChild(img);
 
         const priceCell = document.createElement("td");
-        priceCell.textContent = `Rs.${product.price.toLocaleString()}`
+        priceCell.textContent = `Rs.${product.price}`
 
         const descCell = document.createElement("td");
         descCell.textContent = product.description;
@@ -84,10 +84,10 @@ const products = [
 
     });
 
-    const totalPages = Math.ceil(products.length/rowsPerpage);
-    pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-    prevBtn.disabled = currentPage === 1;
-    nextbtn.disabled = currentPage === totalPages;
+  const totalPages = Math.ceil(products.length/rowsPerpage);
+  pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+  prevBtn.disabled = currentPage === 1;
+  nextbtn.disabled = currentPage === totalPages;
 }
 
 prevBtn.addEventListener("click",() => {
